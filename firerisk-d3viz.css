@@ -23,11 +23,11 @@ button {
 .counties {
   fill: #eee;
   stroke: #000;
-  stroke-width: 0.5px;
+  stroke-width: 0.2px;
 }
 .county-path:hover {
   stroke: #111;
-  stroke-width:0.75px;
+  stroke-width:0.5px;
   opacity: 0.55;
 }
 .zipcodes {
