@@ -1,0 +1,79 @@
+body {
+    font: 10px sans-serif;
+}
+
+.chart-title {
+  font-size: 22px;
+}
+
+.caption {
+  font-size: 15px;
+}
+
+button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.view {
+  fill: white;
+}
+
+.counties {
+  fill: #eee;
+  stroke: #000;
+  stroke-width: 0.5px;
+}
+.county-path:hover {
+  stroke: #111;
+  stroke-width:0.75px;
+  opacity: 0.55;
+}
+.zipcodes {
+  fill: #e0f3db;
+  stroke: #333;
+  stroke-width: 0.1px;
+  opacity: 0.55;
+}
+.zipcode-path:hover {
+  stroke: #111;
+  stroke-width: 0.1px;
+  fill: #a8ddb5;
+  opacity: 1;
+}
+
+/* 
+ * https://rawgit.com/Caged/d3-tip/master/examples/example-styles.css
+ * */
+.d3-tip, .d3-tip-zips, .d3-tip-county {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after, .d3-tip-zips:after, .d3-tip-county:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  position: absolute;
+  pointer-events: none;
+}
+
+.tip-li {
+    display: block;
+    font-size: 9px;
+    font-weight: lighter;
+}
+
+.hidden {
+    display: none;
+}

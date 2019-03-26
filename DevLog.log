@@ -1,0 +1,15 @@
+- For a couple days (few hours a day):
+    + discovered geodata for zipcodes -> tracts -> counties
+    + discovered ways of manipulating the data via CLI
+        using tools developed by Mike Bostock: ndjson-* etc..
+
+- 3/25/18 3pm
+    + made outline of activities
+    + planning time each task will take
+
+- 3/26/18 11am
+    + thinking the process of data cleaning/formatting is getting a little out of hand
+    + trying to keep it as organized as possible without changing the process too much
+       - but will have to think of a better pipeline later..
+
+    + making progress on zip 2 county mapping and getting county data
