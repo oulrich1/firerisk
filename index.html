@@ -11,7 +11,11 @@
 
     <body> 
         <!-- <div id="mapid"></div> -->
-        <button>Reset Zoom</button>
+        <div>
+            <label>Year: </label>
+            <input id ="year-selection" type="range" step="1">
+        </div>
+        <button id="reset-zoom">Reset Zoom</button>
     </body>
 
      <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"
@@ -19,6 +23,7 @@
    crossorigin=""></script>
     <script
         type="text/javascript" src="lib/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
     <script
         type="text/javascript" src="lib/d3-tip.min.js"></script>
     <script
