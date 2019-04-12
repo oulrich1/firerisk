@@ -56,7 +56,8 @@ async function main() {
                .scale([ size.width*3 ]);
 
   const map = svg.append('g')
-    .attr("class", "map");
+    .attr("class", "map")
+    .attr("id", "TheMap");
 
   /* These are for generating html for the Tooltips
     * when hovering over Zipcode and County(if no zip exists
@@ -130,17 +131,31 @@ async function main() {
     *  - double click to zoom,
     *  - click and drag to PAN,
     *  - reset view with button */
-  const zoom = d3.zoom();
-  svg.call(zoom.on("zoom", () => {
-      map.attr("transform", d3.event.transform);
-    }));
 
-  d3.select("button")
-    .on("click", () => {
-      svg.transition()
-        .duration(750)
-        .call(zoom.transform, d3.zoomIdentity);
-    });
+   const zoom = d3.zoom()
+      .scaleExtent([1, 5])
+   svg.call(zoom.on("zoom", () => {
+       map.attr("transform", d3.event.transform);
+     }));
+ 
+   d3.select("button")
+     .on("click", () => {
+       svg.transition()
+         .duration(100)
+         .call(zoom.transform, d3.zoomIdentity);
+     });
+
 }
 
 main();
+
+
+// TODO: use tilemap for better performance, possibly..
+//   // Alternatively using the leaflet zoom controls
+//   var mymap = L.map('mapid').setView([51.505, -0.09], 13);
+//   L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+//       attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+//       maxZoom: 18,
+//       id: 'mapbox.streets',
+//       accessToken: 'pk.eyJ1Ijoib3VscmljaDYiLCJhIjoiY2p0cmMwazR2MGZ0azQ1cGltNjNmb24waSJ9.uedEyuYU6dY5swCG9OHZTg'
+//   }).addTo(mymap);
