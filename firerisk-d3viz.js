@@ -366,8 +366,22 @@ async function main() {
 
     getWeatherData(postalCode).then(weather => {
       // weather.precipitation???
+      const rain_volume = weather.rain && weather.rain["1h"] || 0;
+      d3.select('#precipitation').text(rain_volume);
       d3.select('#min-temp').text(weather.main.temp_min);
       d3.select('#max-temp').text(weather.main.temp_max);
+
+      function predictTodayFireProb(vol, minTemp, maxTemp) {
+        return 0;
+      }
+
+      // TODO: use this to predict probabilty of fire TODAY
+      const prob = predictTodayFireProb(
+        rain_volume,
+        weather.main.temp_min,
+        weather.main.temp_max);
+      log(prob);
+      d3.select('#fireTodayProb').text(prob);
     });
   }
 }
