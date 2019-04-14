@@ -88,9 +88,15 @@ function updateLandcoverDetails(row) {
     return valueOrUnknown(maybeValue, d => Math.round(d * 100));
   }
   d3.select("#elevation").text(valueOrUnknown(row.elevation));
+
   d3.select("#forest").text(toPercentage(row.forest));
+  d3.select('#forest-selection').property('value', row.forest * 100 || 0);
+
   d3.select("#urban").text(toPercentage(row.urban));
+  d3.select('#urban-selection').property('value', row.urban * 100 || 0);
+
   d3.select("#other").text(toPercentage(row.other));
+  d3.select('#other-selection').property('value', row.other * 100 || 0);
 }
 
 async function main() {
@@ -292,24 +298,46 @@ async function main() {
       });
   }
 
+  function getCurLandCoverage() {
+    return landCoverage.filter(
+      row => +row.year === +currentYear &&
+      row.postal_code === curPostalCode);
+  }
+
+  function updateLandcoverSpecifically(key, value) {
+      const curLandCoverage = getCurLandCoverage();
+      if (curLandCoverage.length) {
+        const row = curLandCoverage[0];
+        row[key] = value;
+        updateLandcoverDetails(row);
+        const yearsUntilFire = predictYearsUntilNextFire([
+          row.elevation,
+          row.forest,
+          row.urban,
+          row.other
+        ]);
+        d3.select("#fireInYears").text(yearsUntilFire.toFixed(1));
+      }
+  }
+
   d3.select('#forest-selection')
-    .on('input', () => {
+    .on('change', () => {
       const value = +d3.event.target.value;
+      updateLandcoverSpecifically('forest', value/100);
     });
   d3.select('#urban-selection')
-    .on('input', () => {
+    .on('change', () => {
       const value = +d3.event.target.value;
+      updateLandcoverSpecifically('urban', value/100);
     });
   d3.select('#other-selection')
-    .on('input', () => {
+    .on('change', () => {
       const value = +d3.event.target.value;
+      updateLandcoverSpecifically('other', value/100);
     });
 
   function updateDetails(postalCode) {
-    const curLandCoverage = landCoverage.filter(
-      row => +row.year === +currentYear &&
-      row.postal_code === curPostalCode);
-
+    const curLandCoverage = getCurLandCoverage();
     // the land coverage data starts at 1997 and the last year is 2018.
     // so we can't make any predictions, without that data.
     let yearsUntilFire = undefined;
