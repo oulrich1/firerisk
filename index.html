@@ -19,17 +19,26 @@
         <div id="horizontal-group">
             <svg id="map-container"></svg>
             <div id="details-container">
-                <div id="variable-container">
-                    <div id="elevation"></div>
-                    <div id="forest"></div>
-                    <div id="urban"></div>
-                    <div id="other"></div>
-                </div>
-                <div id="zipcode-details">
-                    <div id="zipcode"></div>
-                    <div id="fireCount"></div>
-                    <div id="fireInYears"></div>
-                </div>
+                <details id="zipcode-details" open>
+                    <summary id="zipcode-details-title">Fire Prediction for ZipCode</summary>
+                    Number of Fires: <div id="fireCount" style="display: inline">Unknown</div>
+                    <br>
+                    Number of Years until next Fire: <div id="fireInYears" style="display: inline">Unknown</div>
+                </details>
+                <details id="variable-container" open>
+                    <summary id="variable-details-title">Landcover Data</summary>
+                    Elevation: <div id="elevation" style="display: inline">Unknown</div> ft
+                    <br>
+                    Forest: <div id="forest" style="display: inline">Unknown</div>%
+                    <input id ="forest-selection" type="range" step="1">
+                    <br>
+                    Urban: <div id="urban" style="display: inline">Unknown</div>%
+                    <input id ="urban-selection" type="range" step="1">
+                    <br>
+                    Other: <div id="other" style="display: inline">Unknown</div>%
+                    <input id ="other-selection" type="range" step="1">
+                    <br>
+                </details>
             </div>
         </div>
     </body>

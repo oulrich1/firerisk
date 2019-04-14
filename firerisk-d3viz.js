@@ -61,12 +61,48 @@ function getWeatherData(zipCode) {
   return d3.json(url);
 }
 
+function updateZipCodeDetails(data) {
+  let title = 'Fire Prediction for ZipCode';
+  if (data.zipCode) {
+    title += ` ${data.zipCode}`;
+  } else {
+    title += ` (Unselected)`;
+  }
+  d3.select('#zipcode-details-title').text(title);
+  d3.select("#fireCount").text(data.fireCount !== undefined ? data.fireCount : 'Unknown');
+  d3.select("#fireInYears").text(data.fireInYears !== undefined ? data.fireInYears : 'Unknown');
+}
+
+function updateLandcoverDetails(row) {
+  function valueOrUnknown(maybeValue, transformIfValue) {
+    if (maybeValue !== undefined) {
+      let definitelyValue = maybeValue;
+      if (transformIfValue) {
+        definitelyValue = transformIfValue(definitelyValue);
+      }
+      return definitelyValue;
+    }
+    return 'Unknown';
+  }
+  function toPercentage(maybeValue) {
+    return valueOrUnknown(maybeValue, d => Math.round(d * 100));
+  }
+  d3.select("#elevation").text(valueOrUnknown(row.elevation));
+  d3.select("#forest").text(toPercentage(row.forest));
+  d3.select("#urban").text(toPercentage(row.urban));
+  d3.select("#other").text(toPercentage(row.other));
+}
+
 async function main() {
   const [ca_cou, ca_zips, glue, fireHistory, landCoverage] = await getData();
   const minYear = d3.min(fireHistory, row => row.fire_year);
   const maxYear = d3.max(fireHistory, row => row.fire_year);
   let currentYear = minYear;
   let curFireHistory = fireHistory.filter(row => +row.fire_year === +minYear);
+  let curPostalCode = undefined;
+
+  updateZipCodeDetails({});
+  updateLandcoverDetails({});
 
   // Details view on the right hand side
   // d3.select('#details-container')
@@ -97,14 +133,14 @@ async function main() {
   const body = d3.select('body')
   // const margin = { left: 20, right: 20, top: 40, bottom: 5 };
   const size = {
-    width: Math.min(480, window.innerWidth || document.body.clientWidth),
-    height: Math.min(700, window.innerHeight || document.body.clientHeight),
+    width: Math.min(600, window.innerWidth || document.body.clientWidth),
+    height: Math.min(720, window.innerHeight || document.body.clientHeight),
   };
   const svg = body.select('svg')
     .attr('width', size.width)
     .attr('height', size.height);
 
-  const zipCodeColorScale = d3.scaleLinear()
+  const zipCodeColorScale = d3.scaleSqrt()
     .domain([0, curFireHistory.length])
     .range(['#f9f9e3', 'darkorange']);
 
@@ -169,6 +205,7 @@ async function main() {
             const fires = curFireHistory.filter(row => row.postal_code === code);
             return zipCodeColorScale(fires.length);
           });
+        updateDetails(curPostalCode);
       });
   }
 
@@ -250,40 +287,58 @@ async function main() {
       })
       .on('mouseout', tipZip.hide)
       .on('click', async function(d) {
-
-        const postal_code = d.properties.ZCTA5CE10;
-        const curLandCoverage = landCoverage.filter(
-          row => +row.year === +currentYear &&
-          row.postal_code === postal_code);
-        
-        d3.select('#zipcode').text(postal_code);
-        const fires = curFireHistory.filter(row => row.postal_code === postal_code);
-        d3.select("#fireCount").text(fires.length);
-
-        // the land coverage data starts at 1997. so we can't make any predictions
-        // without that data.
-        if (curLandCoverage.length) {
-          const row = curLandCoverage[0];
-          d3.select("#elevation").text(row.elevation);
-          d3.select("#forest").text(Math.round(row.forest * 100));
-          d3.select("#urban").text(Math.round(row.urban * 100));
-          d3.select("#other").text(Math.round(row.other * 100));
-          const yearsUntilFire = predictYearsUntilNextFire([
-            row.elevation,
-            row.forest,
-            row.urban,
-            row.other
-          ]);
-          d3.select("#fireInYears").text(yearsUntilFire);
-        }
-
-        // const weather = await getWeatherData(d.properties.ZCTA5CE10);
-        // elevation?
-        // weather.precipitation???
-        // weather.main.temp_min
-        // weather.main.temp_max
-        // log(weather)
+        curPostalCode = d.properties.ZCTA5CE10;
+        updateDetails(curPostalCode);
       });
+  }
+
+  d3.select('#forest-selection')
+    .on('input', () => {
+      const value = +d3.event.target.value;
+    });
+  d3.select('#urban-selection')
+    .on('input', () => {
+      const value = +d3.event.target.value;
+    });
+  d3.select('#other-selection')
+    .on('input', () => {
+      const value = +d3.event.target.value;
+    });
+
+  function updateDetails(postalCode) {
+    const curLandCoverage = landCoverage.filter(
+      row => +row.year === +currentYear &&
+      row.postal_code === curPostalCode);
+
+    // the land coverage data starts at 1997 and the last year is 2018.
+    // so we can't make any predictions, without that data.
+    let yearsUntilFire = undefined;
+    if (curLandCoverage.length) {
+      const row = curLandCoverage[0];
+      updateLandcoverDetails(row);
+      yearsUntilFire = predictYearsUntilNextFire([
+        row.elevation,
+        row.forest,
+        row.urban,
+        row.other
+      ]);
+    } else {
+      updateLandcoverDetails({});
+    }
+    
+    const fires = curFireHistory.filter(row => row.postal_code === curPostalCode);
+    updateZipCodeDetails({
+      zipCode: curPostalCode,
+      fireCount: fires.length,
+      fireInYears: yearsUntilFire ? yearsUntilFire.toFixed(1) : undefined,
+    });
+
+    // const weather = await getWeatherData(d.properties.ZCTA5CE10);
+    // elevation?
+    // weather.precipitation???
+    // weather.main.temp_min
+    // weather.main.temp_max
+    // log(weather)
   }
 }
 
