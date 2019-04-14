@@ -16,6 +16,22 @@
             <input id ="year-selection" type="range" step="1">
         </div>
         <button id="reset-zoom">Reset Zoom</button>
+        <div id="horizontal-group">
+            <svg id="map-container"></svg>
+            <div id="details-container">
+                <div id="variable-container">
+                    <div id="elevation"></div>
+                    <div id="forest"></div>
+                    <div id="urban"></div>
+                    <div id="other"></div>
+                </div>
+                <div id="zipcode-details">
+                    <div id="zipcode"></div>
+                    <div id="fireCount"></div>
+                    <div id="fireInYears"></div>
+                </div>
+            </div>
+        </div>
     </body>
 
      <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"

@@ -13,3 +13,28 @@
        - but will have to think of a better pipeline later..
 
     + making progress on zip 2 county mapping and getting county data
+
+- 4/12/18
+    + made some progress on UI:
+        - added slider for years
+        - added colors to zipcodes
+
+- 4/13/18
+    + attempt to make weather request:
+        - but running into issues with CORS 
+            (request cross origin/domain from browser)
+        - so will have to create a backend api
+    + spent too much time reading the cors docs:
+        https://stackoverflow.com/questions/20361893/no-access-control-allow-origin-header-is-present-on-the-requested-resource-err
+        https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+    + Then getting lost here:
+        https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin
+        + trial and error only resulted in errors. 
+
+        - i think its a server config mainly...
+
+    + then encountered this:
+        https://www.freecodecamp.org/forum/t/calling-openweathermap-api-is-blocked-due-to-cors-header-access-control-allow-origin-missing/191868
+        ie: just use https://cors-anywhere.herokuapp.com
+        as a proxy to request weather
+

@@ -12,28 +12,64 @@ function formatFireData(data) {
   }
 }
 
+function formatLandCoverageData(data) {
+  return {
+    year: +data.year,
+    postal_code: data.postal_code,
+    elevation: +data.elevation,
+    forest: +data.forest,
+    urban: +data.urban,
+    other: +data.other,
+    years_till_next_fire: +data.years_till_next_fire,
+  };
+}
+
 async function getData() {
   const ca_counties = "./target-topojson/cb_2017_06_county_500k.topojson";
   const ca_zipcodes = "./target-topojson/cb_2017_06_zcta510_500k-simple.topojson";
   //const zip2county = "./d3-data/zcta_county_rel_10.csv";
   const zip2county = "./target-json/zcta_county_rel_10-06.json";
   const postcalcode2firedata = "./common-data/pass_2/ca_postalcode_fire_intersections_data.csv";
-  // const openWeatherMapAPI = "https://samples.openweathermap.org/data/2.5/weather?zip=94040,us&appid=b6907d289e10d714a6e88b30761fae22";
+  const postcalcode2landcoverage = "./common-data/pass_2/postal_code_fire_yearly_landcoverage.csv";
   return await Promise.all([
     d3.json(ca_counties),
     d3.json(ca_zipcodes),
     d3.json(zip2county),
     d3.csv(postcalcode2firedata, formatFireData),
-    // d3.json(openWeatherMapAPI, {crossOrigin: "anonymous", mode: 'no-cors'}),
+    d3.csv(postcalcode2landcoverage, formatLandCoverageData),
   ])
 }
 
+function predictYearsUntilNextFire(variables, coefficients) {
+  const [elevation, forest, urban, other] = variables;
+  const [b, e, f, u, o] =
+      coefficients || [4.72102069, -.0000437228105, -0.935146471, 3.26084516, -2.352569869];
+  const year = b
+      + (e*elevation)
+      + (f*forest)
+      + (u*urban)
+      + (o*other)
+  return year;
+}
+
+function getWeatherData(zipCode) {
+  const proxyServer = "https://cors-anywhere.herokuapp.com/";
+  // TODO: move this into a private config...
+  const apiKey = "fa3197b32718f839f0a33d152abaa6a5";
+  const openWeatherMapAPI = `https://api.openweathermap.org/data/2.5/weather?zip=${zipCode},us&appid=${apiKey}&units=metric`;
+  const url = `${proxyServer}${openWeatherMapAPI}`;
+  return d3.json(url);
+}
+
 async function main() {
-  const [ca_cou, ca_zips, glue, fireHistory, weather] = await getData();
+  const [ca_cou, ca_zips, glue, fireHistory, landCoverage] = await getData();
   const minYear = d3.min(fireHistory, row => row.fire_year);
   const maxYear = d3.max(fireHistory, row => row.fire_year);
+  let currentYear = minYear;
   let curFireHistory = fireHistory.filter(row => +row.fire_year === +minYear);
-  log(weather);
+
+  // Details view on the right hand side
+  // d3.select('#details-container')
 
   // fire_area_acres: "584.888061523437"
   // fire_contained_date: "7/11/06"
@@ -64,7 +100,7 @@ async function main() {
     width: Math.min(480, window.innerWidth || document.body.clientWidth),
     height: Math.min(700, window.innerHeight || document.body.clientHeight),
   };
-  const svg = body.append('svg')
+  const svg = body.select('svg')
     .attr('width', size.width)
     .attr('height', size.height);
 
@@ -72,9 +108,7 @@ async function main() {
     .domain([0, curFireHistory.length])
     .range(['#f9f9e3', 'darkorange']);
 
-  const map = svg.append('g')
-    .attr("class", "map")
-    .attr("id", "TheMap");
+  const map = svg.append('g');
 
   const projection = d3.geoMercator()
     .center([-117, 37])
@@ -94,7 +128,7 @@ async function main() {
     .style('text-anchor', 'middle')
     .style('font-size', '2em')
     .classed('title', true)
-    .text(`Fires in ${minYear}`);
+    .text(`Fires in ${currentYear}`);
 
   function enableZoom(svg, map) {
     /* This enables ZOOM on the map:
@@ -114,19 +148,19 @@ async function main() {
           .call(zoom.transform, d3.zoomIdentity);
       });
   }
-
+  
   function enableYearSlider() {
     const sliderID = "#year-selection";
     d3.select(sliderID)
       .property("min", minYear)
       .property("max", maxYear)
-      .property("value", minYear);
+      .property("value", currentYear);
     d3.select(sliderID)
       .on("input", function () {
-        var year = +d3.event.target.value;
+        currentYear = +d3.event.target.value;
         svg.select('.title')
-          .text(`Fires in ${year}`)
-        curFireHistory = fireHistory.filter(row => +row.fire_year === year);
+          .text(`Fires in ${currentYear}`)
+        curFireHistory = fireHistory.filter(row => +row.fire_year === currentYear);
         d3.select('.zipcodes')
           .selectAll("path")
           .transition()
@@ -211,8 +245,45 @@ async function main() {
           const fires = curFireHistory.filter(row => row.postal_code === code);
           return zipCodeColorScale(fires.length);
         })
-      .on('mouseover', tipZip.show)
-      .on('mouseout', tipZip.hide);
+      .on('mouseover', d => {
+          return tipZip.show(d)
+      })
+      .on('mouseout', tipZip.hide)
+      .on('click', async function(d) {
+
+        const postal_code = d.properties.ZCTA5CE10;
+        const curLandCoverage = landCoverage.filter(
+          row => +row.year === +currentYear &&
+          row.postal_code === postal_code);
+        
+        d3.select('#zipcode').text(postal_code);
+        const fires = curFireHistory.filter(row => row.postal_code === postal_code);
+        d3.select("#fireCount").text(fires.length);
+
+        // the land coverage data starts at 1997. so we can't make any predictions
+        // without that data.
+        if (curLandCoverage.length) {
+          const row = curLandCoverage[0];
+          d3.select("#elevation").text(row.elevation);
+          d3.select("#forest").text(Math.round(row.forest * 100));
+          d3.select("#urban").text(Math.round(row.urban * 100));
+          d3.select("#other").text(Math.round(row.other * 100));
+          const yearsUntilFire = predictYearsUntilNextFire([
+            row.elevation,
+            row.forest,
+            row.urban,
+            row.other
+          ]);
+          d3.select("#fireInYears").text(yearsUntilFire);
+        }
+
+        // const weather = await getWeatherData(d.properties.ZCTA5CE10);
+        // elevation?
+        // weather.precipitation???
+        // weather.main.temp_min
+        // weather.main.temp_max
+        // log(weather)
+      });
   }
 }
 
