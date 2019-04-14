@@ -143,7 +143,7 @@ async function main() {
     width: Math.min(600, window.innerWidth || document.body.clientWidth),
     height: Math.min(720, window.innerHeight || document.body.clientHeight),
   };
-  const svg = body.select('svg')
+  const svg = body.select('#map-container')
     .attr('width', size.width)
     .attr('height', size.height);
 
@@ -298,6 +298,7 @@ async function main() {
       .on('click', async function(d) {
         curPostalCode = d.properties.ZCTA5CE10;
         updateDetails(curPostalCode);
+        updateHistSVG();
       });
   }
 
@@ -383,6 +384,85 @@ async function main() {
       log(prob);
       d3.select('#fireTodayProb').text(prob);
     });
+  }
+
+
+  function updateHistSVG() {
+    // curPostalCode, currentYear
+    const fires = fireHistory.filter(row => row.postal_code === curPostalCode); 
+
+    const width = 350;
+    const height = 250;
+    const padding = 40;
+    const histSVG = body.select('#histogram-svg')
+      .attr('width', width)
+      .attr('height', height);
+
+    const title = histSVG
+      .selectAll('.title')
+      .data([curPostalCode]);
+    title.exit().remove();
+    const newTitle = title
+      .enter()
+      .append('text')
+      .attr('x', width / 2)
+      .attr('y', 20)
+      .style('text-anchor', 'middle')
+      .style('font-size', '2em')
+      .classed('title', true);
+    newTitle.merge(title)
+      .text(`Fire Frequency at ${curPostalCode}`);
+
+    const xScale = d3.scaleLinear()
+      .domain([minYear, maxYear])
+      .range([0, width])
+
+    const optimalTicks = xScale.ticks();
+
+    const hist = d3.histogram()
+      .domain(xScale.domain())
+      .thresholds(optimalTicks)
+      .value(d => d.fire_year);
+
+    const bins = hist(fires);
+
+    const yScale = d3.scaleLinear()
+      .domain([0, d3.max(bins, d => d.length)])
+      .range([height, padding]);
+
+    const bars = histSVG
+      .selectAll('.bar')
+      .data(bins);
+  
+    bars.exit().remove();
+  
+    const g = bars.enter()
+      .append('g')
+      .classed('bar', true);
+  
+    g.append('rect');
+    g.merge(bars)
+      .select('rect')
+      .transition()
+        .attr('x', d => xScale(d.x0))
+        .attr('y', d => yScale(d.length))
+        .attr('height', d => height - yScale(d.length))
+        .attr('width', d => {
+            const width = xScale(d.x1) - xScale(d.x0) - 1;
+            return width < 0 ? 0 : width;
+        })
+        .attr('fill', 'darkorange')
+
+    // const xAxis = d3.axisBottom(xScale)
+    //   .tickSizeOuter(0)
+    // const yAxis = d3.axisLeft(yScale)
+    //   .tickSizeOuter(0)
+    // histSVG.append('g')
+    //   .attr('transform', `translate(0, ${height - padding})`)
+    //   .call(xAxis);
+    // histSVG.append('g')
+    //   .attr('transform', `translate(${padding}, 0)`)
+    //   .call(yAxis);
   }
 }
 
