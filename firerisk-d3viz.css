@@ -62,6 +62,11 @@ svg {
   margin-bottom: 10px;
 }
 
+.tick line{
+  opacity: 0.2;
+  stroke-dasharray: 5,5;
+}
+
 
 details {
   border: 1px solid #aaa;

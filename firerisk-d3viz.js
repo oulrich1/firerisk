@@ -381,7 +381,6 @@ async function main() {
         rain_volume,
         weather.main.temp_min,
         weather.main.temp_max);
-      log(prob);
       d3.select('#fireTodayProb').text(prob);
     });
   }
@@ -391,7 +390,7 @@ async function main() {
     // curPostalCode, currentYear
     const fires = fireHistory.filter(row => row.postal_code === curPostalCode); 
 
-    const width = 350;
+    const width = 375;
     const height = 250;
     const padding = 40;
     const histSVG = body.select('#histogram-svg')
@@ -411,11 +410,11 @@ async function main() {
       .style('font-size', '2em')
       .classed('title', true);
     newTitle.merge(title)
-      .text(`Fire Frequency at ${curPostalCode}`);
+      .text(`Fire Frequency per Year at '${curPostalCode}'`);
 
     const xScale = d3.scaleLinear()
       .domain([minYear, maxYear])
-      .range([0, width])
+      .range([padding, width-padding])
 
     const optimalTicks = xScale.ticks();
 
@@ -428,7 +427,7 @@ async function main() {
 
     const yScale = d3.scaleLinear()
       .domain([0, d3.max(bins, d => d.length)])
-      .range([height, padding]);
+      .range([height-padding, padding]);
 
     const bars = histSVG
       .selectAll('.bar')
@@ -446,23 +445,35 @@ async function main() {
       .transition()
         .attr('x', d => xScale(d.x0))
         .attr('y', d => yScale(d.length))
-        .attr('height', d => height - yScale(d.length))
+        .attr('height', d => height - yScale(d.length) - padding)
         .attr('width', d => {
             const width = xScale(d.x1) - xScale(d.x0) - 1;
             return width < 0 ? 0 : width;
         })
         .attr('fill', 'darkorange')
 
-    // const xAxis = d3.axisBottom(xScale)
-    //   .tickSizeOuter(0)
-    // const yAxis = d3.axisLeft(yScale)
-    //   .tickSizeOuter(0)
-    // histSVG.append('g')
-    //   .attr('transform', `translate(0, ${height - padding})`)
-    //   .call(xAxis);
-    // histSVG.append('g')
-    //   .attr('transform', `translate(${padding}, 0)`)
-    //   .call(yAxis);
+    const xAxis = d3.axisBottom(xScale)
+      .tickSizeOuter(0)
+      .tickFormat((d,i,vals) => {
+        if (i === 0 || i == vals.length-1) {
+          return d;
+        }
+        return `${d}`.slice(2);
+      })
+    const yAxis = d3.axisLeft(yScale)
+      .tickSize(-width + 2 * padding)
+      .tickSizeOuter(0)
+    histSVG.select('.xAxis').remove();
+    histSVG.append('g')
+      .classed('xAxis', true)
+      .attr('transform', `translate(0, ${height-padding})`)
+      .call(xAxis);
+    histSVG.select('.yAxis').remove();
+    histSVG.append('g')
+      .classed('yAxis', true)
+      .style("stroke-dasharray", "5 3")
+      .attr('transform', `translate(${padding}, 0)`)
+      .call(yAxis);
   }
 }
 
