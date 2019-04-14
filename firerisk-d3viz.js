@@ -321,17 +321,17 @@ async function main() {
   }
 
   d3.select('#forest-selection')
-    .on('change', () => {
+    .on('input', () => {
       const value = +d3.event.target.value;
       updateLandcoverSpecifically('forest', value/100);
     });
   d3.select('#urban-selection')
-    .on('change', () => {
+    .on('input', () => {
       const value = +d3.event.target.value;
       updateLandcoverSpecifically('urban', value/100);
     });
   d3.select('#other-selection')
-    .on('change', () => {
+    .on('input', () => {
       const value = +d3.event.target.value;
       updateLandcoverSpecifically('other', value/100);
     });
