@@ -56,7 +56,8 @@ function getWeatherData(zipCode) {
   const proxyServer = "https://cors-anywhere.herokuapp.com/";
   // TODO: move this into a private config...
   const apiKey = "fa3197b32718f839f0a33d152abaa6a5";
-  const openWeatherMapAPI = `https://api.openweathermap.org/data/2.5/weather?zip=${zipCode},us&appid=${apiKey}&units=metric`;
+  const unit = 'imperial'; // metric
+  const openWeatherMapAPI = `https://api.openweathermap.org/data/2.5/weather?zip=${zipCode},us&appid=${apiKey}&units=${unit}`;
   const url = `${proxyServer}${openWeatherMapAPI}`;
   return d3.json(url);
 }
@@ -211,8 +212,10 @@ async function main() {
             const fires = curFireHistory.filter(row => row.postal_code === code);
             return zipCodeColorScale(fires.length);
           });
+      })
+      .on('change', function() {
         updateDetails(curPostalCode);
-      });
+      })
   }
 
   function drawCountyPaths() {
@@ -307,7 +310,7 @@ async function main() {
   function updateLandcoverSpecifically(key, value) {
       const curLandCoverage = getCurLandCoverage();
       if (curLandCoverage.length) {
-        const row = curLandCoverage[0];
+        const row = Object.assign({}, curLandCoverage[0]);
         row[key] = value;
         updateLandcoverDetails(row);
         const yearsUntilFire = predictYearsUntilNextFire([
@@ -361,12 +364,11 @@ async function main() {
       fireInYears: yearsUntilFire ? yearsUntilFire.toFixed(1) : undefined,
     });
 
-    // const weather = await getWeatherData(d.properties.ZCTA5CE10);
-    // elevation?
-    // weather.precipitation???
-    // weather.main.temp_min
-    // weather.main.temp_max
-    // log(weather)
+    getWeatherData(postalCode).then(weather => {
+      // weather.precipitation???
+      d3.select('#min-temp').text(weather.main.temp_min);
+      d3.select('#max-temp').text(weather.main.temp_max);
+    });
   }
 }
 

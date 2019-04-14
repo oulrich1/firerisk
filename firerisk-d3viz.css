@@ -52,7 +52,13 @@ svg {
 #details-container {
   float: left;
 }
+#zipcode-details {
+  margin-bottom: 10px;
+}
 #variable-container {
+  margin-bottom: 10px;
+}
+#weather-container {
   margin-bottom: 10px;
 }
 
