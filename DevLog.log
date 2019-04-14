@@ -3,23 +3,23 @@
     + discovered ways of manipulating the data via CLI
         using tools developed by Mike Bostock: ndjson-* etc..
 
-- 3/25/18 3pm
+- 3/25/19 3pm
     + made outline of activities
     + planning time each task will take
 
-- 3/26/18 11am
+- 3/26/19 11am
     + thinking the process of data cleaning/formatting is getting a little out of hand
     + trying to keep it as organized as possible without changing the process too much
        - but will have to think of a better pipeline later..
 
     + making progress on zip 2 county mapping and getting county data
 
-- 4/12/18
+- 4/12/19
     + made some progress on UI:
         - added slider for years
         - added colors to zipcodes
 
-- 4/13/18
+- 4/13/19
     + attempt to make weather request:
         - but running into issues with CORS 
             (request cross origin/domain from browser)
@@ -38,3 +38,11 @@
         ie: just use https://cors-anywhere.herokuapp.com
         as a proxy to request weather
 
+        >> PERFECT
+
+- 4/13/19
+    + made some progress:
+        - weather on UI
+        - # years prediction
+        - % landcover (todo: make sure probabilities add only to 1)
+    + share progress
