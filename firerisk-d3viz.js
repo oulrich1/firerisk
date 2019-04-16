@@ -171,7 +171,7 @@ async function main() {
   const body = d3.select('body')
   // const margin = { left: 20, right: 20, top: 40, bottom: 5 };
   const size = {
-    width: Math.min(750, window.innerWidth || document.body.clientWidth),
+    width: Math.min(680, window.innerWidth || document.body.clientWidth),
     height: Math.min(720, window.innerHeight || document.body.clientHeight),
   };
   const svg = body.select('#map-container')
@@ -185,7 +185,7 @@ async function main() {
   const map = svg.append('g');
 
   const projection = d3.geoMercator()
-    .center([-117, 37])
+    .center([-117, 37.5])
     .translate([size.width / 1.5, size.height / 2])
     .scale([size.width * 5]);
 
@@ -198,9 +198,10 @@ async function main() {
   svg
     .append('text')
     .attr('x', size.width / 1.7)
-    .attr('y', 30)
+    .attr('y', 20)
     .style('text-anchor', 'middle')
     .style('font-size', '2em')
+    .style('font-weight', 'bold')
     .classed('title', true)
     .text(`Fires in ${currentYear}`);
 
