@@ -80,20 +80,28 @@ function updateZipCodeDetails(data) {
 function updateFireInYears(data) {
   function fireInYearsText() {
     if (data.fireInYears !== undefined) {
-      if (data.neverHadFire)
+      if (data.neverHadFire || data.fireInYears >= 20)
         return '20+';
       return `${data.fireInYears.toFixed(1)}`;
     }
     return 'Unknown';
   }
-  d3.select("#fireInYears").text(fireInYearsText())
-}
 
-function fireInYearsText(predictedYears, ) {
-  if (predictedYears >= 20 || neverHadFires()) {
-    return "20+";
+  const text = fireInYearsText();
+  d3.select("#fireInYears").text(text);
+  if (text !== 'Unknown') {
+    const fireInYearsColorScale = d3.scaleSqrt()
+      .domain([1, 5])
+      .range(['red', 'lightgreen']);
+    d3.select("#fireInYearsFlag")
+      .style('background-color', text !== '20+' ? fireInYearsColorScale(data.fireInYears) : 'lightgreen')
+      .style('width', '10px')
+      .style('height', '10px')
+      .style('opacity', 1);
+  } else {
+    d3.select("#fireInYearsFlag")
+      .style('opacity', 0);
   }
-  return predictedYears;
 }
 
 function updateLandcoverDetails(row) {
