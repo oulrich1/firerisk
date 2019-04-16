@@ -328,6 +328,7 @@ async function main() {
       })
       .on('mouseout', tipZip.hide)
       .on('click', async function(d) {
+        delete modifedLandCoverage[curPostalCode];
         curPostalCode = d.properties.ZCTA5CE10;
         updateDetails();
         updateHistSVG();
@@ -350,6 +351,16 @@ async function main() {
         }
         const row = modifedLandCoverage[curPostalCode];
         row[key] = value;
+
+        // Adjusts landcover percentages to add to 1
+        const otherKeys = ['forest', 'urban', 'other'].filter(k => k !== key);
+        const total = ['forest', 'urban', 'other'].reduce((p, k) => p + row[k], 0);
+        const diff = 1 - total;
+        otherKeys.forEach(k => {
+          row[k] += diff / otherKeys.length;
+          row[k] = Math.max(Math.min(row[k], 1), 0);
+        });
+
         updateLandcoverDetails(row);
         const yearsUntilFire = predictYearsUntilNextFire([
           row.elevation,
@@ -387,7 +398,6 @@ async function main() {
     // so we can't make any predictions, without that data.
     let yearsUntilFire = undefined;
     if (curLandCoverage.length) {
-      delete modifedLandCoverage[curPostalCode];
       const row = curLandCoverage[0];
       updateLandcoverDetails(row);
       yearsUntilFire = predictYearsUntilNextFire([
