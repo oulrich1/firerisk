@@ -90,9 +90,9 @@ function updateFireInYears(data) {
   const text = fireInYearsText();
   d3.select("#fireInYears").text(text);
   if (text !== 'Unknown') {
-    const fireInYearsColorScale = d3.scaleSqrt()
+    const fireInYearsColorScale = d3.scaleLinear()
       .domain([1, 5])
-      .range(['red', 'lightgreen']);
+      .range(['#fc8d59', '#91cf60']);
     d3.select("#fireInYearsFlag")
       .style('background-color', text !== '20+' ? fireInYearsColorScale(data.fireInYears) : 'lightgreen')
       .style('width', '10px')
@@ -144,9 +144,6 @@ async function main() {
   function neverHadFire() {
     return noFires.filter(zip => `${zip}` === curPostalCode).length > 0;
   }
-
-  // Details view on the right hand side
-  // d3.select('#details-container')
 
   // fire_area_acres: "584.888061523437"
   // fire_contained_date: "7/11/06"
