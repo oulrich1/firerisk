@@ -166,7 +166,7 @@ async function main() {
   const body = d3.select('body')
   // const margin = { left: 20, right: 20, top: 40, bottom: 5 };
   const size = {
-    width: Math.min(600, window.innerWidth || document.body.clientWidth),
+    width: Math.min(750, window.innerWidth || document.body.clientWidth),
     height: Math.min(720, window.innerHeight || document.body.clientHeight),
   };
   const svg = body.select('#map-container')
@@ -192,7 +192,7 @@ async function main() {
   // Title
   svg
     .append('text')
-    .attr('x', size.width / 2)
+    .attr('x', size.width / 1.7)
     .attr('y', 30)
     .style('text-anchor', 'middle')
     .style('font-size', '2em')

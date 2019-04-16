@@ -11,11 +11,11 @@
 
     <body> 
         <!-- <div id="mapid"></div> -->
-        <div>
-            <label>Year: </label>
-            <input id ="year-selection" type="range" step="1">
+        <div style="position: absolute; left: 10px; padding: 5px">
+            <button id="reset-zoom" style="margin: 10px">Reset Zoom</button>
+            <label style="font-size: 15px; font-weight: bold;">Year: </label>
+            <input id="year-selection" type="range" step="1">
         </div>
-        <button id="reset-zoom">Reset Zoom</button>
         <div id="horizontal-group">
             <svg id="map-container"></svg>
             <div id="details-container">
