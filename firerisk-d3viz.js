@@ -340,10 +340,15 @@ async function main() {
       row.postal_code === curPostalCode);
   }
 
+  let modifedLandCoverage = {}; // by zipcode
+
   function updateLandcoverSpecifically(key, value) {
       const curLandCoverage = getCurLandCoverage();
       if (curLandCoverage.length) {
-        const row = Object.assign({}, curLandCoverage[0]);
+        if (!modifedLandCoverage[curPostalCode]) {
+          modifedLandCoverage[curPostalCode] = Object.assign({}, curLandCoverage[0]);
+        }
+        const row = modifedLandCoverage[curPostalCode];
         row[key] = value;
         updateLandcoverDetails(row);
         const yearsUntilFire = predictYearsUntilNextFire([
@@ -363,17 +368,17 @@ async function main() {
   d3.select('#forest-selection')
     .on('input', () => {
       const value = +d3.event.target.value;
-      updateLandcoverSpecifically('forest', value/100);
+      updateLandcoverSpecifically('forest', value/100, ['urban', 'other']);
     });
   d3.select('#urban-selection')
     .on('input', () => {
       const value = +d3.event.target.value;
-      updateLandcoverSpecifically('urban', value/100);
+      updateLandcoverSpecifically('urban', value/100, ['forest', 'other']);
     });
   d3.select('#other-selection')
     .on('input', () => {
       const value = +d3.event.target.value;
-      updateLandcoverSpecifically('other', value/100);
+      updateLandcoverSpecifically('other', value/100, ['forest', 'urban']);
     });
 
   function updateDetails() {
@@ -382,6 +387,7 @@ async function main() {
     // so we can't make any predictions, without that data.
     let yearsUntilFire = undefined;
     if (curLandCoverage.length) {
+      delete modifedLandCoverage[curPostalCode];
       const row = curLandCoverage[0];
       updateLandcoverDetails(row);
       yearsUntilFire = predictYearsUntilNextFire([
