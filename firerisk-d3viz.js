@@ -55,7 +55,6 @@ function predictYearsUntilNextFire(variables, coefficients) {
 }
 
 function getWeatherData(zipCode) {
-      log('getting weather data')
   const proxyServer = "https://cors-anywhere.herokuapp.com/";
   // TODO: move this into a private config...
   const apiKey = "fa3197b32718f839f0a33d152abaa6a5";
@@ -74,7 +73,27 @@ function updateZipCodeDetails(data) {
   }
   d3.select('#zipcode-details-title').text(title);
   d3.select("#fireCount").text(data.fireCount !== undefined ? data.fireCount : 'Unknown');
-  d3.select("#fireInYears").text(data.fireInYears !== undefined ? data.fireInYears : 'Unknown');
+
+  updateFireInYears(data);
+}
+
+function updateFireInYears(data) {
+  function fireInYearsText() {
+    if (data.fireInYears !== undefined) {
+      if (data.neverHadFire)
+        return '20+';
+      return `${data.fireInYears.toFixed(1)}`;
+    }
+    return 'Unknown';
+  }
+  d3.select("#fireInYears").text(fireInYearsText())
+}
+
+function fireInYearsText(predictedYears, ) {
+  if (predictedYears >= 20 || neverHadFires()) {
+    return "20+";
+  }
+  return predictedYears;
 }
 
 function updateLandcoverDetails(row) {
@@ -114,16 +133,9 @@ async function main() {
   updateZipCodeDetails({});
   updateLandcoverDetails({});
 
-  function fireInYearsText(predictedYears) {
-    function neverHadFires() {
-      return noFires.filter(zip => `${zip}` === curPostalCode).length > 0;
-    }
-    if (predictedYears >= 20 || neverHadFires()) {
-      return "20+";
-    }
-    return predictedYears;
+  function neverHadFire() {
+    return noFires.filter(zip => `${zip}` === curPostalCode).length > 0;
   }
-    
 
   // Details view on the right hand side
   // d3.select('#details-container')
@@ -335,7 +347,10 @@ async function main() {
           row.other
         ]);
 
-        d3.select("#fireInYears").text(fireInYearsText(yearsUntilFire.toFixed(1)));
+        updateFireInYears({
+          fireInYears: yearsUntilFire,
+          neverHadFire: neverHadFire()
+        });
       }
   }
 
@@ -377,26 +392,34 @@ async function main() {
     updateZipCodeDetails({
       zipCode: curPostalCode,
       fireCount: fires.length,
-      fireInYears: yearsUntilFire ? fireInYearsText(yearsUntilFire.toFixed(1)) : undefined,
+      fireInYears: yearsUntilFire,
+      neverHadFire: neverHadFire(),
     });
 
     if (curPostalCode) {
       getWeatherData(curPostalCode).then(weather => {
+        const curLandCoverage = getCurLandCoverage();        
+        if (!curLandCoverage.length) return;
+        const elevation = curLandCoverage[0].elevation;
+
         const rain_volume = weather.rain && weather.rain["1h"] || 0;
         d3.select('#precipitation').text(rain_volume);
         d3.select('#min-temp').text(weather.main.temp_min);
         d3.select('#max-temp').text(weather.main.temp_max);
 
-        function predictTodayFireProb(vol, minTemp, maxTemp) {
-          return 0;
+        // TODO: use this to predict probabilty of fire TODAY
+        function predictTodayFireProb(elevation, vol, minTemp, maxTemp) {
+          return undefined;
         }
 
-        // TODO: use this to predict probabilty of fire TODAY
         const prob = predictTodayFireProb(
+          elevation,
           rain_volume,
           weather.main.temp_min,
           weather.main.temp_max);
-        d3.select('#fireTodayProb').text(prob);
+        d3.select('#fireTodayProb').text(prob !== undefined ? prob : "Unknown");
+      }).catch(err => {
+        log(`ERROR: ${err}`);
       });
     }
   }
