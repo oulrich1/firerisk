@@ -30,12 +30,14 @@ async function getData() {
   //const zip2county = "./d3-data/zcta_county_rel_10.csv";
   const zip2county = "./target-json/zcta_county_rel_10-06.json";
   const postcalcode2firedata = "./common-data/pass_2/ca_postalcode_fire_intersections_data.csv";
+  const listOfZipsWithNoFires = "./common-data/pass_2/postal_codes_no_fires_last_20_years.txt";
   const postcalcode2landcoverage = "./common-data/pass_2/postal_code_fire_yearly_landcoverage.csv";
   return await Promise.all([
     d3.json(ca_counties),
     d3.json(ca_zipcodes),
     d3.json(zip2county),
     d3.csv(postcalcode2firedata, formatFireData),
+    d3.json(listOfZipsWithNoFires),
     d3.csv(postcalcode2landcoverage, formatLandCoverageData),
   ])
 }
@@ -53,6 +55,7 @@ function predictYearsUntilNextFire(variables, coefficients) {
 }
 
 function getWeatherData(zipCode) {
+      log('getting weather data')
   const proxyServer = "https://cors-anywhere.herokuapp.com/";
   // TODO: move this into a private config...
   const apiKey = "fa3197b32718f839f0a33d152abaa6a5";
@@ -101,15 +104,26 @@ function updateLandcoverDetails(row) {
 }
 
 async function main() {
-  const [ca_cou, ca_zips, glue, fireHistory, landCoverage] = await getData();
+  const [ca_cou, ca_zips, glue, fireHistory, noFires, landCoverage] = await getData();
   const minYear = d3.min(fireHistory, row => row.fire_year);
-  const maxYear = d3.max(fireHistory, row => row.fire_year);
-  let currentYear = minYear;
-  let curFireHistory = fireHistory.filter(row => +row.fire_year === +minYear);
+  const maxYear = 2017;// d3.max(fireHistory, row => row.fire_year);
+  let currentYear = maxYear;
+  let curFireHistory = fireHistory.filter(row => +row.fire_year === +currentYear);
   let curPostalCode = undefined;
 
   updateZipCodeDetails({});
   updateLandcoverDetails({});
+
+  function fireInYearsText(predictedYears) {
+    function neverHadFires() {
+      return noFires.filter(zip => `${zip}` === curPostalCode).length > 0;
+    }
+    if (predictedYears >= 20 || neverHadFires()) {
+      return "20+";
+    }
+    return predictedYears;
+  }
+    
 
   // Details view on the right hand side
   // d3.select('#details-container')
@@ -147,8 +161,8 @@ async function main() {
     .attr('width', size.width)
     .attr('height', size.height);
 
-  const zipCodeColorScale = d3.scaleSqrt()
-    .domain([0, curFireHistory.length])
+  let zipCodeColorScale = d3.scaleSqrt()
+    .domain([0, 6])
     .range(['#f9f9e3', 'darkorange']);
 
   const map = svg.append('g');
@@ -297,7 +311,7 @@ async function main() {
       .on('mouseout', tipZip.hide)
       .on('click', async function(d) {
         curPostalCode = d.properties.ZCTA5CE10;
-        updateDetails(curPostalCode);
+        updateDetails();
         updateHistSVG();
       });
   }
@@ -320,7 +334,8 @@ async function main() {
           row.urban,
           row.other
         ]);
-        d3.select("#fireInYears").text(yearsUntilFire.toFixed(1));
+
+        d3.select("#fireInYears").text(fireInYearsText(yearsUntilFire.toFixed(1)));
       }
   }
 
@@ -340,7 +355,7 @@ async function main() {
       updateLandcoverSpecifically('other', value/100);
     });
 
-  function updateDetails(postalCode) {
+  function updateDetails() {
     const curLandCoverage = getCurLandCoverage();
     // the land coverage data starts at 1997 and the last year is 2018.
     // so we can't make any predictions, without that data.
@@ -357,32 +372,33 @@ async function main() {
     } else {
       updateLandcoverDetails({});
     }
-    
+
     const fires = curFireHistory.filter(row => row.postal_code === curPostalCode);
     updateZipCodeDetails({
       zipCode: curPostalCode,
       fireCount: fires.length,
-      fireInYears: yearsUntilFire ? yearsUntilFire.toFixed(1) : undefined,
+      fireInYears: yearsUntilFire ? fireInYearsText(yearsUntilFire.toFixed(1)) : undefined,
     });
 
-    getWeatherData(postalCode).then(weather => {
-      // weather.precipitation???
-      const rain_volume = weather.rain && weather.rain["1h"] || 0;
-      d3.select('#precipitation').text(rain_volume);
-      d3.select('#min-temp').text(weather.main.temp_min);
-      d3.select('#max-temp').text(weather.main.temp_max);
+    if (curPostalCode) {
+      getWeatherData(curPostalCode).then(weather => {
+        const rain_volume = weather.rain && weather.rain["1h"] || 0;
+        d3.select('#precipitation').text(rain_volume);
+        d3.select('#min-temp').text(weather.main.temp_min);
+        d3.select('#max-temp').text(weather.main.temp_max);
 
-      function predictTodayFireProb(vol, minTemp, maxTemp) {
-        return 0;
-      }
+        function predictTodayFireProb(vol, minTemp, maxTemp) {
+          return 0;
+        }
 
-      // TODO: use this to predict probabilty of fire TODAY
-      const prob = predictTodayFireProb(
-        rain_volume,
-        weather.main.temp_min,
-        weather.main.temp_max);
-      d3.select('#fireTodayProb').text(prob);
-    });
+        // TODO: use this to predict probabilty of fire TODAY
+        const prob = predictTodayFireProb(
+          rain_volume,
+          weather.main.temp_min,
+          weather.main.temp_max);
+        d3.select('#fireTodayProb').text(prob);
+      });
+    }
   }
 
 
