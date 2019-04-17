@@ -10,8 +10,9 @@
   + can view histogram of fire occurances
     throughout the years for the selected zipcode
 
-## Data backing this:
-- ./common-data/
-- ./d3-data/
-- ./target-\*
+## Final Product data backing this
+./assembled-data
+
+## Raw data not included, too big
+./data-processing/*
 
