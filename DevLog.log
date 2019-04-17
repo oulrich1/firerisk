@@ -45,4 +45,9 @@
         - weather on UI
         - # years prediction
         - % landcover (todo: make sure probabilities add only to 1)
-    + share progress
+
+- 4/16/19
+    + made some more progress:
+        - minor fixes and UI tweaks
+        - adjusted total landcover %
+        - prepare today % fire prediction calc
