@@ -1,3 +1,8 @@
-d3-data/
-common-data/
+data-processing/common-data/
+data-processing/source-data/
+data-processing/target-json/
+data-processing/target-ndjson/
+data-processing/target-topojson/
+data-processing/unused-script-references/
+
 
