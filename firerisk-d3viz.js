@@ -25,13 +25,13 @@ function formatLandCoverageData(data) {
 }
 
 async function getData() {
-  const ca_counties = "./target-topojson/cb_2017_06_county_500k.topojson";
-  const ca_zipcodes = "./target-topojson/cb_2017_06_zcta510_500k-simple.topojson";
-  //const zip2county = "./d3-data/zcta_county_rel_10.csv";
-  const zip2county = "./target-json/zcta_county_rel_10-06.json";
-  const postcalcode2firedata = "./common-data/pass_2/ca_postalcode_fire_intersections_data.csv";
-  const listOfZipsWithNoFires = "./common-data/pass_2/postal_codes_no_fires_last_20_years.txt";
-  const postcalcode2landcoverage = "./common-data/pass_2/postal_code_fire_yearly_landcoverage.csv";
+  const ca_counties = "./assembled-data/cb_2017_06_county_500k.topojson";
+  const ca_zipcodes = "./assembled-data/cb_2017_06_zcta510_500k-simple.topojson";
+  //const zip2county = "./assembled-data/zcta_county_rel_10.csv";
+  const zip2county = "./assembled-data/zcta_county_rel_10-06.json";
+  const postcalcode2firedata = "./assembled-data/ca_postalcode_fire_intersections_data.csv";
+  const listOfZipsWithNoFires = "./assembled-data/postal_codes_no_fires_last_20_years.txt";
+  const postcalcode2landcoverage = "./assembled-data/postal_code_fire_yearly_landcoverage.csv";
   return await Promise.all([
     d3.json(ca_counties),
     d3.json(ca_zipcodes),
