@@ -1,4 +1,10 @@
-## View Fire Risk in California
+## To Run
+- start backend prediction server:
+    > 1_run_backend_server.sh
+- start frontend interface server:
+    > 2_run_frontend_server.sh
+
+## What does it do
 - Default year selected is 2017
 - Can pan/zoom map of California
 - Can Select zipcode-boundary:
