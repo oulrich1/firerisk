@@ -9,6 +9,7 @@ from xgboost import XGBClassifier
 from flask import Flask
 app = Flask(__name__)
 from flask import request
+from flask_cors import CORS, cross_origin
 
 def testThatItWorks():
     filenames =glob('./data/2001*.csv')
@@ -36,6 +37,7 @@ def predict_prob(row):
     return xgb_pred_prob
 
 @app.route("/predict", methods=['POST'])
+@cross_origin()
 def predict():
     req_data = request.get_json()
     print(req_data)
@@ -44,5 +46,9 @@ def predict():
     tmax = req_data['TMAX']
     tmin = req_data['TMIN']
     prob = predict_prob([float(elev), float(prec), float(tmax), float(tmin)])
-    return str(prob)
+    result = '{"prob_not_fire": ' + str(prob[0][0]) + ', "prob_fire": ' + str(prob[0][1]) + '}'
+    print(result)
+    return result
 
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8000, debug=True)

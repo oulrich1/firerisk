@@ -1,4 +1,4 @@
 #! /bin/bash
 
-pip install xgboost
+pip install xgboost flask flask-cors
 

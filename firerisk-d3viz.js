@@ -58,7 +58,7 @@ function getWeatherData(zipCode) {
   const proxyServer = "https://cors-anywhere.herokuapp.com/";
   // TODO: move this into a private config...
   const apiKey = "fa3197b32718f839f0a33d152abaa6a5";
-  const unit = 'imperial'; // metric
+  const unit = 'metric'; // imperial
   const openWeatherMapAPI = `https://api.openweathermap.org/data/2.5/weather?zip=${zipCode},us&appid=${apiKey}&units=${unit}`;
   const url = `${proxyServer}${openWeatherMapAPI}`;
   return d3.json(url);
@@ -431,15 +431,34 @@ async function main() {
 
         // TODO: use this to predict probabilty of fire TODAY
         function predictTodayFireProb(elevation, vol, minTemp, maxTemp) {
-          return undefined;
+          const localPythonServer = 'http://localhost:5000';
+          return d3.json(`${localPythonServer}/predict`, {
+            method:"POST",
+            body: JSON.stringify({
+              elevation: +elevation,
+              PRCP: +vol,
+              TMIN: +minTemp / 10, // These are 'tenths of Celcius' as required (20 C -> 2.0 C)
+              TMAX: +maxTemp / 10,
+            }),
+            headers: {
+              "Content-type": "application/json; charset=UTF-8"
+            }
+          });
         }
 
-        const prob = predictTodayFireProb(
-          elevation,
-          rain_volume,
-          weather.main.temp_min,
-          weather.main.temp_max);
-        d3.select('#fireTodayProb').text(prob !== undefined ? prob : "Unknown");
+        predictTodayFireProb(
+            elevation,
+            rain_volume,
+            weather.main.temp_min,
+            weather.main.temp_max)
+          .then(data => {
+            let prob = data.prob_fire;
+            prob = prob !== undefined ? `${(prob * 100).toFixed(0)}%` : "Unknown"
+            d3.select('#fireTodayProb').text(prob);
+          })
+          .catch(err => {
+            d3.select('#fireTodayProb').text("Unknown");
+          })
       }).catch(err => {
         log(`ERROR: ${err}`);
       });
