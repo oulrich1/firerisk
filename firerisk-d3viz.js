@@ -42,16 +42,18 @@ async function getData() {
   ])
 }
 
-function predictYearsUntilNextFire(variables, coefficients) {
+function predictYearsUntilNextFire(variables) {
   const [elevation, forest, urban, other] = variables;
-  const [b, e, f, u, o] =
-      coefficients || [4.72102069, -.0000437228105, -0.935146471, 3.26084516, -2.352569869];
-  const year = b
-      + (e*elevation)
-      + (f*forest)
-      + (u*urban)
-      + (o*other)
-  return year;
+
+  //  Current Linear Model
+  // return 4.72102069
+  //   + (-.0000437228105 * elevation)
+  //   + (-0.935146471 * forest)
+  //   + (3.26084516 * urban)
+  //   + (-2.352569869 * other);
+
+  //  Experimental Linear Model
+  return 4.68957427 + (-0.0000323775243*elevation) + (-0.952293464*forest) + (3.20632064*urban) + (-2.25402717*other);
 }
 
 function getWeatherData(zipCode) {
@@ -65,15 +67,8 @@ function getWeatherData(zipCode) {
 }
 
 function updateZipCodeDetails(data) {
-  let title = 'Fire Prediction for ZipCode';
-  if (data.zipCode) {
-    title += ` ${data.zipCode}`;
-  } else {
-    title += ` (Unselected)`;
-  }
-  d3.select('#zipcode-details-title').text(title);
+  d3.selectAll('#curPostalCode').text(data.zipCode ? `${data.zipCode}` : '(Unselected)');
   d3.select("#fireCount").text(data.fireCount !== undefined ? data.fireCount : 'Unknown');
-
   updateFireInYears(data);
 }
 
@@ -102,6 +97,8 @@ function updateFireInYears(data) {
     d3.select("#fireInYearsFlag")
       .style('opacity', 0);
   }
+
+  d3.selectAll('#currentYear').text(data.fromYear);
 }
 
 function updateLandcoverDetails(row) {
@@ -204,6 +201,16 @@ async function main() {
     .style('font-weight', 'bold')
     .classed('title', true)
     .text(`Fires in ${currentYear}`);
+
+  d3.selectAll('#currentYear').text(currentYear);
+
+  body.select('#histogram-svg').classed('hidden', true);
+  body.select('#histogram-container')
+    .append('p')
+    .attr('id', "help-text")
+    .style('font-size', '1.5em')
+    .style('color', 'red')
+    .html('HELP: to get started, select a zipcode on the map');
 
   function enableZoom(svg, map) {
     /* This enables ZOOM on the map:
@@ -370,6 +377,7 @@ async function main() {
         ]);
 
         updateFireInYears({
+          fromYear: currentYear,
           fireInYears: yearsUntilFire,
           neverHadFire: neverHadFire()
         });
@@ -414,11 +422,15 @@ async function main() {
     updateZipCodeDetails({
       zipCode: curPostalCode,
       fireCount: fires.length,
+      fromYear: currentYear,
       fireInYears: yearsUntilFire,
       neverHadFire: neverHadFire(),
     });
 
     if (curPostalCode) {
+      const parseDate = d3.timeFormat("%m/%d/%Y");
+      d3.selectAll('#todayDate').text(parseDate(new Date()));
+      
       getWeatherData(curPostalCode).then(weather => {
         const curLandCoverage = getCurLandCoverage();        
         if (!curLandCoverage.length) return;
@@ -429,7 +441,7 @@ async function main() {
         d3.select('#min-temp').text(weather.main.temp_min);
         d3.select('#max-temp').text(weather.main.temp_max);
 
-        // TODO: use this to predict probabilty of fire TODAY
+        // TODO: use this to predict probability of fire TODAY
         function predictTodayFireProb(elevation, vol, minTemp, maxTemp) {
           const localPythonServer = 'http://localhost:5000';
           return d3.json(`${localPythonServer}/predict`, {
@@ -445,7 +457,6 @@ async function main() {
             }
           });
         }
-
         predictTodayFireProb(
             elevation,
             rain_volume,
@@ -470,10 +481,13 @@ async function main() {
     // curPostalCode, currentYear
     const fires = fireHistory.filter(row => row.postal_code === curPostalCode); 
 
-    const width = 375;
+    const width = 330;
     const height = 250;
-    const padding = 40;
+    const padding = 17;
+    
+    body.select('#histogram-container').select('#help-text').remove();
     const histSVG = body.select('#histogram-svg')
+      .classed('hidden', false)
       .attr('width', width)
       .attr('height', height);
 
@@ -485,12 +499,12 @@ async function main() {
       .enter()
       .append('text')
       .attr('x', width / 2)
-      .attr('y', 20)
+      .attr('y', 15)
       .style('text-anchor', 'middle')
-      .style('font-size', '2em')
+      .style('font-size', '1.5em')
       .classed('title', true);
     newTitle.merge(title)
-      .text(`Fire Frequency per Year at '${curPostalCode}'`);
+      .text(`Fire Frequency per Years for '${curPostalCode}'`);
 
     const xScale = d3.scaleLinear()
       .domain([minYear, maxYear])

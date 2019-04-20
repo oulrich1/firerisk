@@ -20,13 +20,20 @@
             <svg id="map-container"></svg>
             <div id="details-container">
                 <details id="zipcode-details" open>
-                    <summary id="zipcode-details-title">Fire Prediction for ZipCode</summary>
-                    Number of Fires: <div id="fireCount" style="display: inline">Unknown</div>
-                    <br>
-                    Number of Years until next Fire: <div id="fireInYears" style="display: inline">Unknown</div>
-                    <div id="fireInYearsFlag" style="display: inline-block;"></div>
-                    <br>
-                    Likelyhood of Fire Today: <div id="fireTodayProb" style="display: inline">Unknown</div>
+
+                    <summary id="zipcode-details-title">Fire Prediction for ZipCode <div id="curPostalCode" style="display: inline">(Unselected)</div></summary>
+                    <details id="zipcode-details-year-prediction" open>
+                        <summary id="zipcode-details-year-prediction-title">In <div id="currentYear" style="display: inline">today</div></summary>
+                        # Fires: <div id="fireCount" style="display: inline">Unknown</div>
+                        <br>
+                        # Years until Next Fire: <div id="fireInYears" style="display: inline">Unknown</div>
+                        <div id="fireInYearsFlag" style="display: inline-block;"></div>
+                    </details>
+                    <details id="zipcode-details-todays-prediction" open>
+                        <summary id="zipcode-details-todays-prediction-title">On <div id="todayDate" style="display: inline">Today's Date</div></summary>
+                        Likelihood of Fire: <div id="fireTodayProb" style="display: inline">Unknown</div>
+                    </details>
+
                 </details>
                 <details id="variable-container" open>
                     <summary>Landcover Data</summary>
@@ -43,7 +50,7 @@
                     <br>
                 </details>
                 <details id="weather-container" open>
-                    <summary>Weather Data</summary>
+                    <summary>Weather Data for <div id="curPostalCode" style="display: inline">(Unselected)</div> on <div id="todayDate" style="display: inline">Today</div></summary>
                     Precipitation: <div id="precipitation" style="display: inline">Unknown</div> mm 
                     <br>
                     Min Temp: <div id="min-temp" style="display: inline">Unknown</div> C
