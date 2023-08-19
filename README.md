@@ -1,3 +1,7 @@
+## Firerisk UI
+
+![example](example.png "Example")
+
 ## Prerequisite Dependancies
 ###### Thank goodness for ASDF
 
@@ -53,6 +57,6 @@ by this point a tab should have opened in your browser. if not, try : `127.0.0.1
 ## Final Product data backing this
 ./assembled-data
 
-## Raw data not included, too big
+## Raw data not included, too big, find GIS codes
 ./data-processing/*
 
