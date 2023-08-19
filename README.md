@@ -1,18 +1,36 @@
-## Make sure to install dependancies
+## Prerequisite Dependancies
+###### Thank goodness for ASDF
+
+https://asdf-vm.com/guide/getting-started.html#_2-download-asdf
+
 1) nodejs
-2) npm
-3) python
+
+- asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+- asdf install nodejs latest
+- asdf global nodejs latest
+
+2) npm (comes with nodejs installation)
+
+3) python (installed with conda?)
+
 4) pip
 
-finally, run ./0_install_dependancies.sh
-when attempting to run and there are errors:
-'cannot find package <such and such>' try installing
-that package
+
+## Dependancy Installation
+
+terminal 1:
+```
+./0_install_dependancies.sh
+./1_run_backend_server.sh
+```
+
+terminal 2:
+```
+./2_run_frontend_server.sh
+```
 
 ## To Run
 
-what you'll have to do is open one window and start `1_run_backend_server.sh`, leave that open
-then in another window start `2_run_frontend_server.sh`, and leave that open.
 by this point a tab should have opened in your browser. if not, try : `127.0.0.1:8080`
 
 - start backend prediction server:
@@ -20,7 +38,7 @@ by this point a tab should have opened in your browser. if not, try : `127.0.0.1
 - start frontend interface server:
     > 2_run_frontend_server.sh
 
-## What does it do
+## Firerisk UI
 - Default year selected is 2017
 - Can pan/zoom map of California
 - Can Select zipcode-boundary:
